@@ -4,7 +4,10 @@ pipeline {
     booleanParam(name: 'SIMULATE_BUG', defaultValue: false,
                  description: 'Deploy a faulty version to prove traffic is NOT switched')
   }
-  environment { TAG = "v2.${env.BUILD_NUMBER}" }
+    environment {
+    TAG = "v2.${env.BUILD_NUMBER}"
+    DOCKER_CONFIG = 'C:/Users/RAJESH/.docker'
+  }
 
   stages {
     stage('Checkout') { steps { checkout scm } }
