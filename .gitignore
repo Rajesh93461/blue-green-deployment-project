@@ -1,0 +1,4 @@
+.env
+.active
+nginx/active.conf
+__pycache__/
