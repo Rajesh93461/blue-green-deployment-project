@@ -66,3 +66,4 @@ BROKEN=1 ./scripts/deploy.sh v3    # faulty build goes to idle env
 
 ## Limitations (mention in viva)
 Running two environments doubles resources, and database changes must stay backward compatible.
+
