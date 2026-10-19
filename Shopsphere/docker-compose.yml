@@ -1,0 +1,41 @@
+name: shopsphere
+services:
+  blue:                                # Version 1.0: 5 attributes, classic layout (old)
+    build:
+      context: ./app
+      args: { APP_VERSION: "1.0" }
+    image: shopsphere-blue:1.0
+    container_name: shop-blue
+    environment: [ENV_NAME=blue]
+    ports: ["3001:3000"]               # test Blue directly: http://localhost:3001
+
+  green:                               # Version 2.0: 9 attributes, modern layout (new)
+    build:
+      context: ./app
+      args: { APP_VERSION: "2.0" }
+    image: shopsphere-green:2.0
+    container_name: shop-green
+    environment: [ENV_NAME=green]
+    ports: ["3002:3000"]               # test Green directly: http://localhost:3002
+
+  router:                              # Nginx: users always visit http://localhost:8080
+    build: ./router
+    container_name: shop-router
+    ports: ["8080:80"]
+    volumes: ["routing:/shared"]       # the Deployment Console writes the active route here
+    depends_on: [blue, green]
+
+  controller:                          # Deployment Console: http://localhost:9000
+    build: ./controller
+    container_name: shop-controller
+    environment:
+      - BLUE_URL=http://blue:3000
+      - GREEN_URL=http://green:3000
+      - ROUTER_URL=http://router:80
+      - SHARED_DIR=/shared
+    volumes: ["routing:/shared"]
+    ports: ["9000:9000"]
+    depends_on: [router]
+
+volumes:
+  routing:

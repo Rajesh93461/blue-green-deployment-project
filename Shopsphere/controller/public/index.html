@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShopSphere Deployment Console</title>
+<style>
+:root{--b:#2563eb;--g:#16a34a;--r:#dc2626;--a:#d97706;--bg:#0b1220;--card:#131c2e;--bd:#24324d;--tx:#e8eefb;--mu:#8fa0bf}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:linear-gradient(90deg,#0f1b34,#12294d);border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:20px}header small{color:var(--mu)}
+.live{padding:7px 16px;border-radius:99px;font-weight:800;font-size:14px}
+.tabs{display:flex;gap:6px;padding:10px 24px 0}.tabs button{background:none;border:0;color:var(--mu);padding:10px 16px;cursor:pointer;font-size:14px;border-bottom:3px solid transparent}
+.tabs button.on{color:#fff;border-color:var(--b)}
+main{padding:16px 24px;max-width:1250px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
+h3{margin:0 0 12px;font-size:15px;color:#c9d6ef}
+.flow{display:grid;grid-template-columns:150px 40px 170px 40px 1fr;align-items:center;gap:6px}
+.node{background:#0e1627;border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center}.node b{display:block;font-size:15px}
+.arrow{text-align:center;color:var(--mu);font-size:22px}.arrow.on{color:#fbbf24;animation:slide 1s infinite}
+@keyframes slide{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
+.envs{display:grid;gap:10px}
+.env{border:2px solid var(--bd);border-radius:12px;padding:12px 14px;background:#0e1627;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;transition:.3s}
+.env.blue.on{border-color:var(--b);box-shadow:0 0 18px rgba(37,99,235,.45)}.env.green.on{border-color:var(--g);box-shadow:0 0 18px rgba(22,163,74,.45)}
+.env h4{margin:0;font-size:17px}.env.blue h4{color:#60a5fa}.env.green h4{color:#4ade80}.env p{margin:3px 0 0;font-size:12.5px;color:var(--mu)}
+.tag{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:800;background:#1b2740;color:var(--mu)}
+.tag.live{background:#fbbf24;color:#222;animation:pulse 1.6s infinite}.tag.down{background:#7f1d1d;color:#fecaca}.tag.bug{background:#7c2d12;color:#fed7aa}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(251,191,36,0)}0%{box-shadow:0 0 0 0 rgba(251,191,36,.6)}}
+.controls{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.sw{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}.sw input{width:18px;height:18px}
+.btn{border:0;border-radius:9px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}.dep{background:var(--g)}.rb{background:var(--r)}.rs{background:#475569}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.st{background:#0e1627;border:1px solid var(--bd);border-radius:12px;padding:12px;text-align:center;min-height:110px}
+.st .ic{font-size:26px;height:34px}.st b{font-size:13px;display:block;margin:4px 0}.st small{color:var(--mu);font-size:11.5px}
+.st.running{border-color:var(--a)}.st.passed{border-color:var(--g)}.st.failed{border-color:var(--r)}.st.skipped{opacity:.45}
+.spin{display:inline-block;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.gauge{height:18px;background:#0e1627;border-radius:9px;position:relative;overflow:hidden;border:1px solid var(--bd)}
+.fill{height:100%;transition:.3s}.mark{position:absolute;top:0;bottom:0;width:3px;background:#fff}
+.big{font-size:38px;font-weight:900}
+.why{border-color:var(--r);background:linear-gradient(180deg,#2a1216,#1a1119)}.why h3{color:#fca5a5}.why li{margin:7px 0;line-height:1.5}
+.alarm{background:#7f1d1d;border:1px solid var(--r);padding:12px;border-radius:10px;margin-bottom:12px;font-weight:700}
+#log{background:#060a14;border-radius:10px;padding:10px;height:210px;overflow:auto;font:12.5px/1.55 ui-monospace,Menlo,Consolas,monospace}
+.l-ok{color:#4ade80}.l-warn{color:#fbbf24}.l-error{color:#f87171}.l-info{color:#93c5fd}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{padding:9px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mu)}
+.res{font-weight:800}.SUCCESS{color:#4ade80}.BLOCKED,.DEGRADED{color:#fbbf24}.ROLLED{color:#f87171}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.frames{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.fr{border:2px solid var(--bd);border-radius:12px;overflow:hidden;background:#fff}.fr .cap{background:#0e1627;padding:8px 12px;font-weight:700;font-size:14px}
+.fr .view{height:430px;overflow:hidden}.fr iframe{width:200%;height:860px;transform:scale(.5);transform-origin:0 0;border:0}
+.yes{color:#4ade80;font-weight:800}.no{color:#f87171;font-weight:800}tr.new td{background:rgba(22,163,74,.12)}
+@media(max-width:900px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.steps{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+</style></head><body>
+<header><div><h1>🚀 ShopSphere Deployment Console</h1><small>Blue-Green deployment: release, monitor, roll back</small></div><div class="live" id="livepill">...</div></header>
+<div class="tabs"><button id="t-c" onclick="tab('c')">Deployment Console</button><button id="t-p" onclick="tab('p')">Live Preview</button><button id="t-m" onclick="tab('m')">Compare Blue vs Green</button></div>
+<main>
+<div id="v-c">
+ <div class="card"><h3>1. Traffic flow: who is serving users right now?</h3><div class="flow" id="flow"></div></div>
+ <div class="card"><h3>2. Release controls</h3><div class="controls">
+  <label class="sw"><input type="checkbox" id="bug" onchange="cfg()"> Release contains a hidden bug (discount calculation fails in Green)</label>
+  <label class="sw"><input type="checkbox" id="auto" onchange="cfg()"> Auto-rollback when error rate &gt; 5%</label></div>
+  <p style="margin:14px 0 0" class="controls"><button class="btn dep" id="bdep" onclick="act('deploy')">▶ Deploy Green v2.0</button><button class="btn rb" id="brb" onclick="act('rollback')">↩ Rollback to Blue</button><button class="btn rs" id="brs" onclick="act('reset')">⟲ Reset demo</button></p></div>
+ <div class="card"><h3>3. Deployment steps</h3><div id="alarm"></div><div class="steps" id="steps"></div></div>
+ <div class="card"><h3>4. Live monitoring (test requests through the router)</h3><div class="two"><div><div class="big" id="rate">–</div><div style="color:var(--mu);font-size:13px" id="mon"></div></div>
+  <div><div class="gauge"><div class="fill" id="fill"></div><div class="mark" id="mark" style="left:10%"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-top:4px"><span>0%</span><span>limit 5%</span><span>50%</span></div></div></div></div>
+ <div id="why"></div>
+ <div class="two"><div class="card"><h3>Event log</h3><div id="log"></div></div><div class="card"><h3>Deployment history</h3><div style="overflow:auto"><table id="hist"></table></div></div></div>
+</div>
+<div id="v-p" style="display:none"><div class="card"><h3>The same shop, three views: Blue, Green and what users see</h3><div class="frames" id="frames"></div></div></div>
+<div id="v-m" style="display:none"></div>
+</main>
+<script>
+const $=(s)=>document.querySelector(s), esc=(s)=>String(s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let busyCfg=false, framesDone=false;
+function tab(t){for(const k of ['c','p','m']){$('#v-'+k).style.display=k===t?'':'none';$('#t-'+k).className=k===t?'on':''}
+ if(t==='p'&&!framesDone){framesDone=true;const h=location.hostname;
+  $('#frames').innerHTML=[['🔵 BLUE v1.0 (port 3001)',3001],['🟢 GREEN v2.0 (port 3002)',3002],['👥 What users see (port 8080)',8080]].map(([n,p])=>`<div class="fr"><div class="cap">${n}</div><div class="view"><iframe src="http://${h}:${p}"></iframe></div></div>`).join('')}
+ if(t==='m')cmp()}
+async function api(u,m,b){const r=await fetch(u,{method:m||'GET',headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});return r.json()}
+async function act(a){const r=await api('/api/'+a,'POST');if(!r.success)alert(r.error.message);poll()}
+async function cfg(){busyCfg=true;const r=await api('/api/config','POST',{bug:$('#bug').checked,autoRollback:$('#auto').checked});if(!r.success)alert(r.error.message);busyCfg=false;poll()}
+const ICON={pending:'○',running:'<span class="spin">⏳</span>',passed:'✅',failed:'❌',skipped:'⏭'};
+function render(s){
+ const live=s.live, L=live.toUpperCase(), ver=live==='blue'?'v1.0':'v2.0';
+ $('#livepill').textContent=`Users are on: ${L} ${ver}`;$('#livepill').style.background=live==='blue'?'#2563eb':'#16a34a';
+ const env=(k,name,v,attrs,lay)=>{const e=s.envs[k],on=live===k;return `<div class="env ${k} ${on?'on':''}"><div><h4>${name} · ${v}</h4><p>${attrs} attributes · ${lay}</p></div><div>
+   ${e.up?'':'<span class="tag down">STOPPED</span> '}${k==='green'&&s.config.bug?'<span class="tag bug">HIDDEN BUG</span> ':''}<span class="tag ${on?'live':''}">${on?'● LIVE: receiving users':'STANDBY'}</span></div></div>`};
+ $('#flow').innerHTML=`<div class="node">👥<b>Users</b><small style="color:var(--mu)">port 8080</small></div><div class="arrow on">➜</div><div class="node">🔀<b>Nginx router</b><small style="color:var(--mu)">routing to ${L}</small></div><div class="arrow on">➜</div>
+  <div class="envs">${env('blue','BLUE','v1.0',5,'classic table layout')}${env('green','GREEN','v2.0',9,'modern card layout')}</div>`;
+ if(!busyCfg){$('#bug').checked=s.config.bug;$('#auto').checked=s.config.autoRollback}
+ $('#bug').disabled=$('#auto').disabled=s.busy;
+ $('#bdep').disabled=s.busy||live!=='blue';$('#brb').disabled=s.busy||live!=='green';$('#brs').disabled=s.busy;
+ $('#alarm').innerHTML=s.alarm?'<div class="alarm">🚨 ALARM: Green is failing real traffic and auto-rollback is OFF. Click “Rollback to Blue”.</div>':'';
+ $('#steps').innerHTML=s.steps.map((x,i)=>`<div class="st ${x.status}"><div class="ic">${ICON[x.status]}</div><b>${i+1}. ${x.name}</b><small>${esc(x.detail||x.status)}</small></div>`).join('');
+ const m=s.monitor,bad=m.rate!==null&&m.rate>s.config.threshold;
+ $('#rate').textContent=m.rate===null?'–':m.rate+'%';$('#rate').style.color=m.rate===null?'#8fa0bf':bad?'#f87171':'#4ade80';
+ $('#mon').textContent=m.probes?`${m.errors} failed of ${m.probes} requests`+(m.failing.length?` · failing product IDs: ${m.failing.join(', ')}`:''):'Starts after traffic is switched to Green';
+ $('#fill').style.width=Math.min(m.rate||0,50)*2+'%';$('#fill').style.background=bad?'#dc2626':'#16a34a';$('#mark').style.left=(s.config.threshold*2)+'%';
+ $('#why').innerHTML=s.rollback?`<div class="card why"><h3>⚠ Why did the rollback happen?</h3><p style="margin:0 0 8px"><b>Reason:</b> ${esc(s.rollback.reason)}</p><ol>${s.rollback.explain.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>`:'';
+ const lg=$('#log'),atEnd=lg.scrollTop+lg.clientHeight>=lg.scrollHeight-20;
+ lg.innerHTML=s.logs.map(l=>`<div class="l-${l.level}">[${l.t}] ${esc(l.msg)}</div>`).join('');if(atEnd)lg.scrollTop=lg.scrollHeight;
+ $('#hist').innerHTML='<tr><th>#</th><th>Time</th><th>Change</th><th>Result</th><th>Reason</th></tr>'+(s.history.map(h=>`<tr><td>${h.id}</td><td>${h.time}</td><td>${h.from} → ${h.to}</td><td class="res ${h.result.split(' ')[0]}">${h.result}</td><td>${esc(h.reason||'')}</td></tr>`).join('')||'<tr><td colspan="5" style="color:var(--mu)">No deployments yet</td></tr>');
+}
+async function poll(){try{const r=await api('/api/state');if(r.success)render(r.data)}catch(e){}}
+async function cmp(){
+ const d=(await api('/api/compare')).data,yn=(v)=>v?'<td class="yes">✔</td>':'<td class="no">✘</td>';
+ $('#v-m').innerHTML=`<div class="two"><div class="card"><h3>🔵 BLUE · Version 1.0</h3><div class="big" style="color:#60a5fa">5 attributes</div><div style="color:var(--mu)">${d.options.filter(o=>o.blue).length} options · ${d.layout.blue}</div></div>
+ <div class="card"><h3>🟢 GREEN · Version 2.0</h3><div class="big" style="color:#4ade80">9 attributes</div><div style="color:var(--mu)">${d.options.filter(o=>o.green).length} options · ${d.layout.green}</div></div></div>
+ <div class="two"><div class="card"><h3>Attributes</h3><table><tr><th>#</th><th>Attribute</th><th>Blue</th><th>Green</th></tr>${d.attributes.map(a=>`<tr class="${a.blue?'':'new'}"><td>${a.no}</td><td>${a.name}${a.blue?'':' <b>(new)</b>'}</td>${yn(a.blue)}${yn(a.green)}</tr>`).join('')}</table></div>
+ <div class="card"><h3>Options (features)</h3><table><tr><th>Option</th><th>Blue</th><th>Green</th></tr>${d.options.map(o=>`<tr class="${o.blue?'':'new'}"><td>${o.name}</td>${yn(o.blue)}${yn(o.green)}</tr>`).join('')}</table></div></div>
+ <div class="card"><h3>Layout</h3><table><tr><th>Blue v1.0</th><th>Green v2.0</th></tr><tr><td>${d.layout.blue}</td><td>${d.layout.green}</td></tr></table></div>`}
+tab('c');poll();setInterval(poll,800);
+</script></body></html>

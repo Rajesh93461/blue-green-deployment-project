@@ -1,0 +1,8 @@
+{
+  "name": "shopsphere",
+  "version": "1.0.0",
+  "description": "Educational e-commerce app for demonstrating Blue-Green deployment",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "express": "4.19.2" }
+}

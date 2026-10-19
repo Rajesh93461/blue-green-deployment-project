@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShopSphere Classic (Blue v1.0)</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#eef4ff;color:#222}
+.top{background:#1d4ed8;color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.top h1{margin:0;font-size:22px}.badge{background:#fff;color:#1d4ed8;font-weight:bold;padding:5px 12px;border-radius:4px;font-size:13px}
+.wrap{max-width:900px;margin:16px auto;padding:0 14px}
+.info{background:#dbe7ff;border:1px solid #b6ccf5;padding:10px 12px;font-size:13px;line-height:1.6}
+.bar{background:#fff;border:1px solid #c7d6f5;padding:10px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.bar input,.bar select{padding:7px;border:1px solid #9db5e8}.bar button,.add button{background:#1d4ed8;color:#fff;border:0;padding:8px 16px;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:#fff;margin-top:10px}
+th{background:#c9daff;text-align:left}th,td{border:1px solid #c7d6f5;padding:8px;font-size:14px}
+tr.row:hover{background:#f1f6ff;cursor:pointer}
+.box{background:#fffbe6;border:1px solid #e6d58a;padding:10px;margin-top:10px;font-size:14px;display:none}
+details{background:#fff;border:1px solid #c7d6f5;margin-top:10px;padding:10px}.add input{padding:6px;margin:4px 6px 4px 0;width:170px}
+.msg{font-size:13px;margin-top:6px}
+</style></head><body>
+<div class="top"><h1>ShopSphere Classic</h1><span class="badge" id="badge">BLUE · Version 1.0</span></div>
+<div class="wrap">
+ <div class="info" id="info"></div>
+ <div class="bar"><input id="q" placeholder="Search by product name"><select id="cat"><option value="">All categories</option></select><button onclick="load()">Search</button></div>
+ <table><thead><tr><th>Product ID</th><th>Product Name</th><th>Price</th><th>Category</th><th>Stock Quantity</th></tr></thead><tbody id="rows"></tbody></table>
+ <div class="box" id="detail"></div>
+ <details class="add"><summary><b>Add a product</b> (Version 1.0 has 5 attributes; ID is automatic)</summary>
+  <input id="n" placeholder="Product Name"><input id="p" type="number" placeholder="Price"><input id="c" placeholder="Category"><input id="s" type="number" placeholder="Stock Quantity">
+  <button onclick="add()">Add</button><div class="msg" id="msg"></div></details>
+</div>
+<script>
+const $=(s)=>document.querySelector(s), esc=(s)=>String(s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(n)=>'₹'+Number(n).toLocaleString('en-IN');
+async function api(u,o){const r=await fetch(u,o),j=await r.json();if(!j.success)throw new Error(j.error.message+(j.error.details?': '+j.error.details.join(', '):''));return j}
+async function init(){
+ const i=(await api('/api/info')).data;
+ $('#info').innerHTML=`<b>Environment:</b> ${i.environment.toUpperCase()} &nbsp;|&nbsp; <b>Version:</b> ${i.version} &nbsp;|&nbsp; <b>Product attributes:</b> ${i.attributeCount}<br><b>Options available:</b> ${i.features.join(', ')} &nbsp;|&nbsp; <b>Layout:</b> ${i.layout}`;
+ const all=(await api('/api/products')).data; [...new Set(all.map(p=>p.category))].forEach(c=>$('#cat').insertAdjacentHTML('beforeend',`<option>${c}</option>`));
+ load();
+}
+async function load(){
+ const r=await api('/api/products?search='+encodeURIComponent($('#q').value)+'&category='+encodeURIComponent($('#cat').value));
+ $('#rows').innerHTML=r.data.map(p=>`<tr class="row" onclick="show(${p.id})"><td>${p.id}</td><td>${esc(p.name)}</td><td>${money(p.price)}</td><td>${esc(p.category)}</td><td>${p.stock}</td></tr>`).join('')||'<tr><td colspan="5">No products found</td></tr>';
+}
+async function show(id){
+ try{const p=(await api('/api/products/'+id)).data;$('#detail').style.display='block';$('#detail').innerHTML=`<b>${esc(p.name)}</b>: ID ${p.id}, Price ${money(p.price)}, Category ${esc(p.category)}, Stock ${p.stock}`}
+ catch(e){$('#detail').style.display='block';$('#detail').textContent='Error: '+e.message}
+}
+async function add(){
+ try{const r=await api('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('#n').value,price:$('#p').value,category:$('#c').value,stock:$('#s').value})});
+  $('#msg').style.color='green';$('#msg').textContent='Added product #'+r.data.id;load()}
+ catch(e){$('#msg').style.color='red';$('#msg').textContent=e.message}
+}
+init().catch(e=>{document.body.innerHTML='<p style="padding:20px">Could not load: '+esc(e.message)+'</p>'});
+</script></body></html>

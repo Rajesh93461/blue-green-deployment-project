@@ -1,0 +1,14 @@
+[
+  {"id":1,"name":"NovaBook 14 Laptop","price":54999,"category":"Laptops","stock":25,"brand":"NovaTech","rating":4.4,"discount":10,"description":"14-inch lightweight laptop with 16 GB RAM and 512 GB SSD."},
+  {"id":2,"name":"NovaBook Pro 16 Laptop","price":89999,"category":"Laptops","stock":12,"brand":"NovaTech","rating":4.7,"discount":5,"description":"16-inch performance laptop for developers and designers."},
+  {"id":3,"name":"StudyMate 15 Laptop","price":38999,"category":"Laptops","stock":40,"brand":"Lumio","rating":4.1,"discount":15,"description":"Budget laptop for students with all-day battery life."},
+  {"id":4,"name":"WaveBeat Wireless Headphones","price":3499,"category":"Headphones","stock":80,"brand":"SoundWave","rating":4.3,"discount":20,"description":"Bluetooth over-ear headphones with 30-hour battery."},
+  {"id":5,"name":"WaveBeat Noise Cancelling","price":7999,"category":"Headphones","stock":35,"brand":"SoundWave","rating":4.6,"discount":12,"description":"Active noise cancelling headphones with clear calls."},
+  {"id":6,"name":"BassBud Earbuds","price":1799,"category":"Headphones","stock":120,"brand":"Lumio","rating":4.0,"discount":25,"description":"Compact true wireless earbuds with a charging case."},
+  {"id":7,"name":"Lumio X1 Smartphone","price":24999,"category":"Smartphones","stock":60,"brand":"Lumio","rating":4.5,"discount":8,"description":"6.5-inch AMOLED phone with 50 MP camera."},
+  {"id":8,"name":"Lumio X1 Pro Smartphone","price":39999,"category":"Smartphones","stock":30,"brand":"Lumio","rating":4.6,"discount":6,"description":"Flagship-class phone with fast charging and 12 GB RAM."},
+  {"id":9,"name":"NovaPhone Lite","price":12999,"category":"Smartphones","stock":90,"brand":"NovaTech","rating":4.2,"discount":18,"description":"Affordable smartphone with a large battery."},
+  {"id":10,"name":"KeyCraft Mechanical Keyboard","price":4299,"category":"Keyboards","stock":55,"brand":"KeyCraft","rating":4.5,"discount":10,"description":"Hot-swappable mechanical keyboard with RGB lighting."},
+  {"id":11,"name":"KeyCraft Wireless Keyboard","price":2299,"category":"Keyboards","stock":70,"brand":"KeyCraft","rating":4.2,"discount":15,"description":"Slim wireless keyboard for office and home use."},
+  {"id":12,"name":"TypeEase Compact Keyboard","price":1299,"category":"Keyboards","stock":100,"brand":"Lumio","rating":3.9,"discount":22,"description":"Compact 75% keyboard with quiet keys."}
+]

@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShopSphere (Green v2.0)</title>
+<style>
+:root{--g:#16a34a;--bg:#f2f8f4;--tx:#14231b;--mu:#5d6f65;--bd:#d9ebe0}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--tx)}
+header{position:sticky;top:0;z-index:5;background:#0f2a1c;color:#fff;display:flex;gap:14px;align-items:center;padding:12px 22px;flex-wrap:wrap}
+.logo{font-size:23px;font-weight:800}.logo b{color:#4ade80}
+header input{flex:1;min-width:170px;padding:11px 16px;border-radius:24px;border:0;font-size:15px}
+.pill{background:linear-gradient(90deg,#16a34a,#059669);padding:7px 15px;border-radius:99px;font-weight:700;font-size:13px}
+.cartbtn{background:#fbbf24;color:#222;border:0;padding:9px 15px;border-radius:24px;font-weight:700;cursor:pointer}
+.hero{background:linear-gradient(120deg,#059669,#16a34a 55%,#65a30d);color:#fff;padding:30px 22px}
+.hero h1{margin:0 0 4px;font-size:30px}.hero span.c{display:inline-block;background:rgba(255,255,255,.22);padding:5px 12px;border-radius:99px;margin:10px 6px 0 0;font-size:13px}
+.layout{max-width:1200px;margin:18px auto;padding:0 16px;display:grid;grid-template-columns:240px 1fr;gap:18px}
+aside{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:16px;height:fit-content;position:sticky;top:78px}
+aside h4{margin:16px 0 6px;font-size:12px;color:var(--mu);text-transform:uppercase}aside h4:first-child{margin-top:0}
+.chip{display:inline-block;padding:6px 12px;margin:3px 3px 0 0;border:1px solid var(--bd);border-radius:99px;font-size:13px;cursor:pointer;background:#fff}.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+select,.in{width:100%;padding:9px;border:1px solid var(--bd);border-radius:9px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:14px;position:relative;transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(5,80,40,.15)}
+.img{font-size:60px;text-align:center;background:linear-gradient(135deg,#e7f8ee,#f3fbe9);border-radius:12px;padding:16px}
+.off{position:absolute;top:12px;left:12px;background:#dc2626;color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px}
+.card h3{font-size:15px;margin:10px 0 2px}.mu{color:var(--mu);font-size:13px}.star{color:#f59e0b;font-size:14px}
+.price{font-size:20px;font-weight:800;margin:6px 0}.price s{font-size:13px;color:var(--mu);font-weight:400}
+.row{display:flex;gap:8px;margin-top:8px}.btn{flex:1;border:0;border-radius:9px;padding:8px;cursor:pointer;font-size:13px;font-weight:600}
+.b1{background:var(--g);color:#fff}.b2{background:#e7f3ea;color:#14532d}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.mb{background:#fff;border-radius:16px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mu);width:42%}
+.err{background:#fee2e2;color:#991b1b;padding:12px;border-radius:10px;font-weight:600}
+.msg{font-size:13px;margin-top:8px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}aside{position:static}}
+</style></head><body>
+<header><div class="logo">Shop<b>Sphere</b></div><input id="q" placeholder="Search products..." oninput="load()"><span class="pill" id="pill">GREEN · Version 2.0</span><button class="cartbtn" onclick="showCart()">🛒 Cart (<span id="cc">0</span>)</button></header>
+<div class="hero"><h1>The new ShopSphere experience</h1><div>Version 2.0 · smarter filters, richer product details</div><div id="chips"></div></div>
+<div class="layout">
+ <aside>
+  <h4>Category</h4><div id="cats"></div>
+  <h4>Brand</h4><select id="brand" onchange="state.brand=this.value;load()"><option value="">All brands</option></select>
+  <h4>Sort by</h4><select onchange="state.sort=this.value;load()"><option value="">Featured</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="rating">Top rated</option><option value="discount">Biggest discount</option></select>
+  <h4>Availability</h4><label><input type="checkbox" onchange="state.stock=this.checked;load()"> In stock only</label>
+  <h4>Admin</h4><button class="btn b1" style="width:100%" onclick="addForm()">+ Add product</button>
+ </aside>
+ <main><div class="mu" id="count" style="margin-bottom:10px"></div><div class="grid" id="grid"></div></main>
+</div>
+<div id="modal" onclick="if(event.target===this)this.style.display='none'"><div class="mb" id="mb"></div></div>
+<script>
+const $=(s)=>document.querySelector(s), esc=(s)=>String(s).replace(/[&<>"']/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICON={Laptops:'💻',Headphones:'🎧',Smartphones:'📱',Keyboards:'⌨️'}, money=(n)=>'₹'+Number(n).toLocaleString('en-IN');
+const final=(p)=>p.discount?Math.round(p.price*(1-p.discount/100)):p.price;
+const LABEL={id:'Product ID',name:'Product Name',price:'Price',category:'Category',stock:'Stock Quantity',brand:'Brand',rating:'Product Rating',discount:'Discount Percentage',description:'Product Description'};
+let info,products=[],cart=[],state={cat:'',brand:'',sort:'',stock:false};
+async function api(u,o){const r=await fetch(u,o),j=await r.json();if(!j.success)throw new Error(j.error.message+(j.error.details?': '+j.error.details.join(', '):''));return j}
+async function init(){
+ info=(await api('/api/info')).data;
+ $('#chips').innerHTML=`<span class="c">${info.attributeCount} product attributes</span><span class="c">${info.features.length} shopping options</span><span class="c">${info.layout}</span>`;
+ const all=(await api('/api/products')).data, cats=[...new Set(all.map(p=>p.category))], brands=[...new Set(all.map(p=>p.brand))];
+ $('#cats').innerHTML=['All',...cats].map(c=>`<span class="chip ${c==='All'?'on':''}" onclick="pickCat(this,'${c==='All'?'':c}')">${c}</span>`).join('');
+ brands.forEach(b=>$('#brand').insertAdjacentHTML('beforeend',`<option>${esc(b)}</option>`)); load();
+}
+function pickCat(el,c){state.cat=c;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));el.classList.add('on');load()}
+async function load(){
+ const p=new URLSearchParams({search:$('#q').value,category:state.cat,brand:state.brand,sort:state.sort,instock:state.stock?1:0});
+ const r=await api('/api/products?'+p);products=r.data;$('#count').textContent=r.count+' products found';
+ $('#grid').innerHTML=products.map(p=>`<div class="card">${p.discount?`<span class="off">${p.discount}% OFF</span>`:''}<div class="img">${ICON[p.category]||'📦'}</div>
+  <h3>${esc(p.name)}</h3><div class="mu">by ${esc(p.brand)} · ${esc(p.category)}</div>
+  <div class="star">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))} <span class="mu">${p.rating}</span></div>
+  <div class="price">${money(final(p))} ${p.discount?`<s>${money(p.price)}</s>`:''}</div>
+  <div class="mu">${p.stock>0?'In stock: '+p.stock:'Out of stock'}</div>
+  <div class="row"><button class="btn b2" onclick="quick(${p.id})">Quick view</button><button class="btn b1" onclick="addCart(${p.id})">Add to cart</button></div></div>`).join('')||'<p>No products found.</p>';
+}
+function modal(h){$('#mb').innerHTML=h;$('#modal').style.display='flex'}
+async function quick(id){
+ try{const p=(await api('/api/products/'+id)).data;
+  modal(`<h2>${esc(p.name)}</h2><table>${Object.entries(p).map(([k,v])=>`<tr><th>${LABEL[k]}</th><td>${k==='price'?money(v):k==='discount'?v+'%':esc(v)}</td></tr>`).join('')}</table><p class="mu">All ${Object.keys(p).length} attributes of Version ${info.version}</p><button class="btn b1" onclick="$('#modal').style.display='none'">Close</button>`)}
+ catch(e){modal(`<div class="err">⚠ Sorry, this product could not be loaded.<br>${esc(e.message)}</div><p><button class="btn b1" onclick="$('#modal').style.display='none'">Close</button></p>`)}
+}
+function addCart(id){const p=products.find(x=>x.id===id);cart.push(p);$('#cc').textContent=cart.length}
+function showCart(){
+ const t=cart.reduce((s,p)=>s+final(p),0);
+ modal(`<h2>Your cart</h2>${cart.length?`<table>${cart.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(final(p))}</td></tr>`).join('')}<tr><th>Total</th><td><b>${money(t)}</b></td></tr></table>`:'<p>Your cart is empty.</p>'}<p><button class="btn b1" onclick="$('#modal').style.display='none'">Close</button></p>`)
+}
+const FORM={name:['Product Name','text'],price:['Price (₹)','number'],category:['Category','text'],stock:['Stock Quantity','number'],brand:['Brand','text'],rating:['Rating (0-5)','number'],discount:['Discount %','number'],description:['Description','text']};
+function addForm(){
+ modal(`<h2>Add product</h2><p class="mu">Version 2.0 has ${info.attributeCount} attributes (ID is automatic), so this form has 8 inputs.</p>
+  ${Object.keys(FORM).map(k=>`<p><label class="mu">${FORM[k][0]}</label><input class="in" id="f-${k}" type="${FORM[k][1]}" step="any"></p>`).join('')}
+  <button class="btn b1" onclick="save()">Save product</button><div class="msg" id="msg"></div>`)
+}
+async function save(){
+ const b={};Object.keys(FORM).forEach(k=>b[k]=$('#f-'+k).value);
+ try{const r=await api('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});$('#msg').style.color='green';$('#msg').textContent='Added product #'+r.data.id;load()}
+ catch(e){$('#msg').style.color='#dc2626';$('#msg').textContent=e.message}
+}
+init().catch(e=>{document.body.innerHTML='<p style="padding:20px">Could not load: '+esc(e.message)+'</p>'});
+</script></body></html>
