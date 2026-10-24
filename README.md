@@ -1,69 +1,59 @@
-# Blue-Green Deployment Platform (Git + Docker + Jenkins + Nginx)
+# Blue-Green Deployment in DevOps
 
-Zero-downtime releases with instant rollback. Two identical environments run side by side:
-**Blue** (live) and **Green** (new version). Nginx decides which one users see.
+A zero-downtime application deployment and rollback project, built with Docker, Nginx, Git and Jenkins.
+This repository has two parts.
+
+> An educational project inspired by how large online retailers release new versions safely.
+> It is not Amazon's real system and does not use Amazon's name or logo.
+
+## Part 1: ShopSphere (main project) - `Shopsphere/`
+
+An e-commerce application released with the Blue-Green strategy, plus a **Deployment Console** that runs the release steps, watches real traffic and rolls back automatically.
+
+| | **Blue: Version 1.0 (old)** | **Green: Version 2.0 (new)** |
+|---|---|---|
+| Attributes | 5 | 9 |
+| Options | 2 | 9 |
+| Layout | Classic table list | Modern card grid with filter sidebar and cart |
+
+What it demonstrates:
+- **A good release:** health check, smoke tests, traffic switch, live monitoring, success.
+- **A bad release:** a hidden bug in Green is caught by live monitoring (25% errors, limit 5%), and traffic rolls back to Blue with a clear reason.
+- **A blocked release:** an unhealthy Green never receives users.
+
+Run it (Windows 11, Docker Desktop, PowerShell):
+```powershell
+cd Shopsphere
+.\scripts\start.ps1
+```
+Then open http://localhost:9000 (Deployment Console).
+
+Full instructions, demo steps, report and viva answers: see [`Shopsphere/README.md`](Shopsphere/README.md), [`Shopsphere/REPORT.md`](Shopsphere/REPORT.md) and [`Shopsphere/VIVA.md`](Shopsphere/VIVA.md).
+
+## Part 2: Jenkins CI/CD pipeline - root folder
+
+The first version of the project: a small Flask app deployed Blue to Green by a Jenkins pipeline.
 
 ```
-Git push -> Jenkins -> Test -> Docker build -> Deploy to idle env
-         -> Health check -> Switch Nginx -> Verify (auto rollback on failure)
+Git push -> Jenkins -> Test -> Docker build -> Deploy to idle environment
+         -> Health check -> Switch Nginx -> Verify (automatic rollback on failure)
 ```
 
-## Project structure
-| File | Purpose |
+| Folder / file | Purpose |
 |---|---|
-| `app/app.py` | Sample Flask app with `/` (shows env + version) and `/health` |
-| `app/Dockerfile` | Builds the app image |
-| `docker-compose.yml` | Runs Blue, Green and the Nginx router |
-| `nginx/blue.conf`, `green.conf` | Routing rules; `active.conf` = the live one |
-| `scripts/deploy.sh` | Build image and deploy to the **idle** environment |
-| `scripts/health.sh` | Health check (retries 10 times) |
-| `scripts/switch.sh` | Switch traffic Blue <-> Green |
-| `scripts/rollback.sh` | Send traffic back to the previous environment |
-| `Jenkinsfile` | The full CI/CD pipeline |
+| `app/` | Flask app with `/health`, plus its Dockerfile and tests |
+| `docker-compose.yml` | Blue, Green and Nginx router |
+| `nginx/` | Routing files for Blue and Green |
+| `scripts/` | PowerShell scripts: setup, deploy, health check, switch, rollback |
+| `Jenkinsfile` | The pipeline stages (checkout, test, deploy, health check, switch, verify) |
 
-## Requirements
-Docker Desktop (with Compose), Git, Jenkins. On Windows use **WSL2 or Git Bash** to run the scripts.
+Run the pipeline from Jenkins with **Build with Parameters**. Tick `SIMULATE_BUG` to show a broken release being blocked at the health check.
 
-## Part 1: Run without Jenkins (quick demo)
-```bash
-./scripts/setup.sh                 # Blue v1 live at http://localhost:8080
-./scripts/deploy.sh v2             # v2 goes to Green (idle). Users still see Blue
-./scripts/health.sh green          # health check on Green (http://localhost:5002)
-./scripts/switch.sh green          # users now see Green v2, no downtime
-./scripts/rollback.sh              # instantly back to Blue v1
-```
-**Failed release demo:**
-```bash
-BROKEN=1 ./scripts/deploy.sh v3    # faulty build goes to idle env
-./scripts/health.sh <idle-env>     # FAILS -> do not switch; users unaffected
-```
+> Both parts use port 8080 for users, so run only one at a time (run `.\scripts\stop.ps1` in `Shopsphere`, or `docker rm -f app-blue app-green app-router` for Part 2, before starting the other).
 
-## Part 2: Run with Jenkins
-1. Push this folder to a GitHub repo.
-2. Jenkins: **New Item -> Pipeline -> Pipeline script from SCM** -> your repo URL -> script path `Jenkinsfile`.
-3. The Jenkins agent must have Docker and Docker Compose, and permission to use Docker
-   (Jenkins on your own machine: `sudo usermod -aG docker jenkins`, then restart Jenkins).
-4. Click **Build with Parameters**:
-   - `SIMULATE_BUG` unticked -> release goes live.
-   - `SIMULATE_BUG` ticked -> health check fails, traffic is **not** switched.
-5. Open http://localhost:8080 after each build and watch the version change.
+## Tools used
+Git and GitHub, Docker and Docker Compose, Nginx, Jenkins, Node.js and Express, Python and Flask, PowerShell.
 
-## Screenshots to put in your report
-1. Jenkins pipeline stage view (green run).
-2. Jenkins run with `SIMULATE_BUG` showing the Health Check stage failed.
-3. `docker ps` showing app-blue, app-green, app-router.
-4. Browser at localhost:8080 showing Blue v1, then Green v2.
-5. Browser after rollback.
-
-## How it maps to the abstract
-- **Git**: version control and pipeline trigger
-- **Docker**: identical containers for Blue and Green
-- **Jenkins**: build, test, deploy automation (`Jenkinsfile`)
-- **Health checks**: `/health` endpoint + `health.sh`
-- **Traffic routing**: Nginx config swap + reload
-- **Rollback**: `rollback.sh` / automatic in the Verify stage
-- **Deployment history**: Jenkins build history (and the website dashboard demo)
-
-## Limitations (mention in viva)
-Running two environments doubles resources, and database changes must stay backward compatible.
-
+## Benefits and limitations
+**Benefits:** near-zero downtime, safe checks before and after the switch, instant rollback.
+**Limitations:** two environments need double the resources, and database changes must work with both versions.
